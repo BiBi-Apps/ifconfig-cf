@@ -14,5 +14,10 @@
     "builtin": true,
     "es2024": true
   },
-  "ignorePatterns": ["dist/**", "node_modules/**", ".wrangler/**"]
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    ".wrangler/**",
+    "worker-configuration.d.ts"
+  ]
 }

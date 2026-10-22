@@ -10,6 +10,36 @@ $ curl https://example.com
 1.2.3.4
 ```
 
+## Usage
+
+Open it in a browser and the page shows your IP. In a terminal, everything is
+plain text:
+
+```bash
+# your IP (a browser gets an HTML page instead)
+curl ifconfig.example.com
+# 1.2.3.4
+
+# the same IP, without looking at UA / Accept
+curl ifconfig.example.com/ip
+# 1.2.3.4
+```
+
+### Per-point IP record
+
+`/_/<point_name>` reads the IP recorded for a point; `POST` writes it. `point_name`
+must be at most 64 characters.
+
+```bash
+# read the IP recorded for this point (127.0.0.1 when nothing is recorded)
+curl ifconfig.example.com/_my-point
+# 1.2.3.4
+
+# record this visitor's IP; only written when the token matches
+curl -X POST "ifconfig.example.com/_my-point?token=secret"
+# 1.2.3.4
+```
+
 ## Commands
 
 ```txt
@@ -29,19 +59,4 @@ npm run fix:formatter    # oxfmt (write)
 
 npm run test             # vitest run
 npm run test:watch       # vitest in watch mode
-```
-
-## Cloudflare types
-
-Generate/sync types for your Worker bindings:
-
-```txt
-npm run cf-typegen
-```
-
-Then pass the bindings as a generic:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
 ```

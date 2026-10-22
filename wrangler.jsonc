@@ -3,4 +3,11 @@
   "name": "ifconfig-cf",
   "compatibility_date": "2025-08-03",
   "main": "./src/index.tsx",
+  // KV 绑定：`npx wrangler kv namespace create KV` 创建后，把返回的 id 粘到下面
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "10b351f4236844a096b40d1820b658da",
+    },
+  ],
 }

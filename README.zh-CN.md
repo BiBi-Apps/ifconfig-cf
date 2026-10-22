@@ -10,6 +10,34 @@ $ curl https://example.com
 1.2.3.4
 ```
 
+## 用法
+
+浏览器打开是页面，终端里全部是纯文本：
+
+```bash
+# 你的 IP（浏览器会拿到 HTML 页面）
+curl ifconfig.example.com
+# 1.2.3.4
+
+# 同样只返回 IP，不看 UA / Accept
+curl ifconfig.example.com/ip
+# 1.2.3.4
+```
+
+### 按 point 记录 IP
+
+`/_/<point_name>` 用 GET 读该 point 的记录，用 POST 写入。`point_name` 最长 64 个字符。
+
+```bash
+# 读取该 point 记录的 IP（没有记录则返回 127.0.0.1）
+curl ifconfig.example.com/_my-point
+# 1.2.3.4
+
+# 记录本次访问者 IP，token 正确才会写入
+curl -X POST "ifconfig.example.com/_my-point?token=secret"
+# 1.2.3.4
+```
+
 ## 常用命令
 
 ```txt
@@ -29,19 +57,4 @@ npm run fix:formatter    # oxfmt（写入）
 
 npm run test             # vitest run
 npm run test:watch       # vitest 监听模式
-```
-
-## Cloudflare 类型
-
-按 Worker 配置生成/同步绑定类型：
-
-```txt
-npm run cf-typegen
-```
-
-使用绑定时传入泛型：
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
 ```
