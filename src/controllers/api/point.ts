@@ -12,7 +12,7 @@ import {
 import { fetchToken, readRecorded, readToken } from './point.utils'
 
 /**
- * GET /_/:point_name —— 读取该 point 记录的 IP。
+ * GET /_/:point_name、GET /_/:point_name/ip —— 读取该 point 记录的 IP。
  *
  * 先查进程内缓存（15 分钟），未命中再读 KV 并回填；都没有则返回 127.0.0.1。
  * point_name 的校验由 `requirePointName` 中间件完成。

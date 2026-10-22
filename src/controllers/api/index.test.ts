@@ -106,6 +106,83 @@ describe('GET /:point_name', () => {
   })
 })
 
+describe('GET /:point_name/ip', () => {
+  test('返回 KV 里记录的 IP', async () => {
+    const kv = mockKV({ 'ip-point-a': '198.51.100.7' })
+    const res = await apiApp.request('/point-a/ip', {}, envWith(kv))
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(res.headers.get('x-client-ip-stored')).toBeNull()
+    expect(await res.text()).toBe('198.51.100.7')
+    expect(kv.gets).toEqual(['ip-point-a'])
+    expect(kv.puts).toHaveLength(0)
+  })
+
+  test('没有记录时返回 127.0.0.1', async () => {
+    const kv = mockKV()
+    const res = await apiApp.request('/point-a/ip', {}, envWith(kv))
+
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe('127.0.0.1')
+    expect(kv.puts).toHaveLength(0)
+  })
+
+  test('带上 token 也只读不写', async () => {
+    const kv = mockKV({
+      'token-point-a': 'secret',
+      'ip-point-a': '198.51.100.7',
+    })
+    const res = await apiApp.request(
+      '/point-a/ip?token=secret',
+      { headers: { 'cf-connecting-ip': '203.0.113.42' } },
+      envWith(kv),
+    )
+
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe('198.51.100.7')
+    expect(kv.puts).toHaveLength(0)
+    expect(kv.gets).toEqual(['ip-point-a'])
+  })
+
+  test('与 /:point_name 共用同一份缓存', async () => {
+    const kv = mockKV({ 'ip-point-a': '198.51.100.7' })
+
+    await apiApp.request('/point-a', {}, envWith(kv))
+    const res = await apiApp.request('/point-a/ip', {}, envWith(kv))
+
+    expect(await res.text()).toBe('198.51.100.7')
+    expect(kv.gets).toEqual(['ip-point-a'])
+  })
+
+  test('point_name 过长时直接返回兜底值，不碰 KV', async () => {
+    const name = 'a'.repeat(65)
+    const kv = mockKV({ [`ip-${name}`]: '198.51.100.7' })
+    const res = await apiApp.request(`/${name}/ip`, {}, envWith(kv))
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(await res.text()).toBe('127.0.0.1')
+    expect(kv.gets).toHaveLength(0)
+  })
+
+  test('POST 到 /ip 不写 KV', async () => {
+    const kv = mockKV({
+      'token-point-a': 'secret',
+      'ip-point-a': '198.51.100.7',
+    })
+    const res = await apiApp.request(
+      '/point-a/ip?token=secret',
+      { method: 'POST', headers: { 'cf-connecting-ip': '203.0.113.42' } },
+      envWith(kv),
+    )
+
+    expect(res.status).toBe(404)
+    expect(kv.puts).toHaveLength(0)
+  })
+})
+
 describe('POST /:point_name', () => {
   const IP_HEADERS = { 'cf-connecting-ip': '203.0.113.42' }
 

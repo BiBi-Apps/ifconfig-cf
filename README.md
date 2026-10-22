@@ -27,12 +27,12 @@ curl ifconfig.example.com/ip
 
 ### Per-point IP record
 
-`/_/<point_name>` reads the IP recorded for a point; `POST` writes it. `point_name`
-must be at most 64 characters.
+`/_/<point_name>/ip` reads the IP recorded for a point; `POST /_/<point_name>`
+writes it. `point_name` must be at most 64 characters.
 
 ```bash
 # read the IP recorded for this point (127.0.0.1 when nothing is recorded)
-curl ifconfig.example.com/_my-point
+curl ifconfig.example.com/_my-point/ip
 # 1.2.3.4
 
 # record this visitor's IP; only written when the token matches

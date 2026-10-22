@@ -26,11 +26,12 @@ curl ifconfig.example.com/ip
 
 ### 按 point 记录 IP
 
-`/_/<point_name>` 用 GET 读该 point 的记录，用 POST 写入。`point_name` 最长 64 个字符。
+`/_/<point_name>/ip` 用 GET 读该 point 的记录，`POST /_/<point_name>` 写入。
+`point_name` 最长 64 个字符。
 
 ```bash
 # 读取该 point 记录的 IP（没有记录则返回 127.0.0.1）
-curl ifconfig.example.com/_my-point
+curl ifconfig.example.com/_my-point/ip
 # 1.2.3.4
 
 # 记录本次访问者 IP，token 正确才会写入
