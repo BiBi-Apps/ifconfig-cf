@@ -1,0 +1,35 @@
+{
+  "name": "ifconfig-cf",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "$npm_execpath run build && vite preview",
+    "deploy": "$npm_execpath run build && wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "lint": "concurrently -m 1 --timings npm:lint:*",
+    "lint:type-check": "tsc -p tsconfig.json --noEmit",
+    "lint:formatter": "oxfmt --check",
+    "lint:oxlint": "oxlint",
+    "lint:test": "vitest run",
+    "fix:formatter": "oxfmt",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "hono": "^4.13.13"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.44.0",
+    "concurrently": "^10.0.6",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.4",
+    "vite-ssr-components": "^0.8.0",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.110.0"
+  }
+}
