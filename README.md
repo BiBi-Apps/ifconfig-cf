@@ -50,11 +50,10 @@ npm run preview      # preview the production build locally
 npm run deploy       # build and deploy to Cloudflare Workers
 npm run clean        # remove dist/
 
-npm run lint             # type-check + formatter check + oxlint + tests (sequential)
+npm run lint             # type-check + formatter check + oxlint (sequential)
 npm run lint:type-check  # tsc -p tsconfig.json --noEmit
 npm run lint:formatter   # oxfmt --check
 npm run lint:oxlint      # oxlint
-npm run lint:test        # vitest run
 npm run fix:formatter    # oxfmt (write)
 
 npm run test             # vitest run

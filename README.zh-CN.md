@@ -48,11 +48,10 @@ npm run preview      # 本地预览构建产物
 npm run deploy       # 构建并部署到 Cloudflare Workers
 npm run clean        # 删除 dist/
 
-npm run lint             # 类型检查 + 格式检查 + oxlint + 测试，依次执行
+npm run lint             # 类型检查 + 格式检查 + oxlint，依次执行
 npm run lint:type-check  # tsc -p tsconfig.json --noEmit
 npm run lint:formatter   # oxfmt --check
 npm run lint:oxlint      # oxlint
-npm run lint:test        # vitest run
 npm run fix:formatter    # oxfmt（写入）
 
 npm run test             # vitest run

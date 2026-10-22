@@ -12,7 +12,6 @@
     "lint:type-check": "tsc -p tsconfig.json --noEmit",
     "lint:formatter": "oxfmt --check",
     "lint:oxlint": "oxlint",
-    "lint:test": "vitest run",
     "fix:formatter": "oxfmt",
     "test": "vitest run",
     "test:watch": "vitest"
