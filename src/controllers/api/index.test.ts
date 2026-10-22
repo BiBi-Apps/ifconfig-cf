@@ -432,3 +432,56 @@ describe('进程内缓存（15 分钟）', () => {
     }
   })
 })
+
+describe('KV 操作日志', () => {
+  /** 取出结构化日志（hono logger 的普通文本会被跳过） */
+  function logEntries(): Array<Record<string, unknown>> {
+    return vi
+      .mocked(console.log)
+      .mock.calls.map(([line]) => {
+        try {
+          return JSON.parse(String(line)) as Record<string, unknown>
+        } catch {
+          return null
+        }
+      })
+      .filter((entry): entry is Record<string, unknown> => entry !== null)
+  }
+
+  test('kv.get / kv.put 都会打日志', async () => {
+    const kv = mockKV({ 'token-point-a': 'secret' })
+
+    await apiApp.request(
+      '/point-a?token=secret',
+      { method: 'POST', headers: { 'cf-connecting-ip': '1.1.1.1' } },
+      envWith(kv),
+    )
+
+    expect(logEntries()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          event: 'kv.get',
+          key: 'token-point-a',
+          hit: true,
+        }),
+        expect.objectContaining({
+          event: 'kv.put',
+          key: 'ip-point-a',
+          value: '1.1.1.1',
+          ttl: 60 * 60 * 24,
+        }),
+      ]),
+    )
+  })
+
+  test('缓存命中时打 cache.hit，不再打 kv.get', async () => {
+    const kv = mockKV({ 'ip-point-a': '198.51.100.7' })
+    await apiApp.request('/point-a', {}, envWith(kv))
+    await apiApp.request('/point-a', {}, envWith(kv))
+
+    expect(logEntries().map((entry) => entry.event)).toEqual([
+      'kv.get',
+      'cache.hit',
+    ])
+  })
+})

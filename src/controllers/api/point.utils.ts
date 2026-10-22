@@ -1,5 +1,6 @@
 import type { Context } from 'hono'
 import type { AppEnv } from '../../types'
+import { logEvent } from '../../utils/log'
 import { cacheGet, cacheSet } from './point.cache'
 import { CACHE_TTL_MS, FALLBACK_IP, TOKEN_CACHE_TTL_MS } from './point.constant'
 
@@ -20,6 +21,8 @@ export async function fetchToken(
   const key = `token-${pointName}`
   const expected = await c.env.KV.get(key)
 
+  logEvent(c, 'kv.get', { key, hit: expected !== null, fromCache: false })
+
   // 没查到也缓存（负缓存），避免用随机 token 刷 KV read
   cacheSet(key, expected, TOKEN_CACHE_TTL_MS)
 
@@ -34,9 +37,14 @@ export async function readToken(
 ): Promise<TokenLookup> {
   if (!token) return { value: null, fromCache: false }
 
-  const cached = cacheGet(`token-${pointName}`)
+  const key = `token-${pointName}`
+  const cached = cacheGet(key)
 
-  if (cached.hit) return { value: cached.value, fromCache: true }
+  if (cached.hit) {
+    logEvent(c, 'cache.hit', { key })
+
+    return { value: cached.value, fromCache: true }
+  }
 
   return { value: await fetchToken(c, pointName), fromCache: false }
 }
@@ -50,10 +58,14 @@ export async function readRecorded(
   const cached = cacheGet(key)
 
   if (cached.hit) {
+    logEvent(c, 'cache.hit', { key })
+
     return { value: cached.value ?? FALLBACK_IP, fromCache: true }
   }
 
   const recorded = await c.env.KV.get(key)
+
+  logEvent(c, 'kv.get', { key, hit: recorded !== null, fromCache: false })
 
   // 兜底值也缓存：避免用随机 point_name 刷 KV read（代价是别的 colo 写入后
   // 最多 15 分钟才会在这里生效）

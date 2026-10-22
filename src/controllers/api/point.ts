@@ -1,6 +1,7 @@
 import type { Context } from 'hono'
 import type { AppEnv } from '../../types'
 import { getClientIp } from '../../utils/ip'
+import { logEvent } from '../../utils/log'
 import { cacheSet } from './point.cache'
 import {
   CACHE_TTL_MS,
@@ -45,12 +46,19 @@ export async function pointPost(c: Context<AppEnv>) {
       : lookup.value
 
     if (expected !== token) {
+      logEvent(c, 'token.mismatch', { point: pointName, fromCache: true })
+
       const recorded = await readRecorded(c, pointName)
 
       return c.text(recorded.value, 200, TEXT)
     }
 
     await c.env.KV.put(`ip-${pointName}`, ip, { expirationTtl: IP_TTL_SECONDS })
+    logEvent(c, 'kv.put', {
+      key: `ip-${pointName}`,
+      value: ip,
+      ttl: IP_TTL_SECONDS,
+    })
     // 当前 isolate 立即可见，不必等 KV 最终一致
     cacheSet(`ip-${pointName}`, ip, CACHE_TTL_MS)
     c.header(STORED_HEADER, '1')
