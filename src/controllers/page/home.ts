@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 import type { AppEnv } from '../../types'
 import { getClientIp } from '../../utils/ip'
-import { ip } from './ip'
+import { PLAIN_TYPE } from '../middleware/plain'
 
 /** 常见浏览器 UA 特征（curl / wget / python-requests 等都不匹配）。 */
 const BROWSER_UA =
@@ -24,6 +24,10 @@ export function home(c: Context<AppEnv>) {
     return c.render(getClientIp(c) ?? 'unknown')
   }
 
-  // 其它客户端（curl / wget / 脚本）：复用 /ip 的纯文本响应
-  return ip(c)
+  // 其它客户端（curl / wget / 脚本）：纯文本。'/' 还会回 HTML，挂不了 plain
+  // 中间件，所以头在这里自己给。
+  return c.text(getClientIp(c) ?? 'unknown', 200, {
+    'Cache-Control': 'no-store',
+    'Content-Type': PLAIN_TYPE,
+  })
 }

@@ -1,8 +1,5 @@
 /** point 控制器的常量。 */
 
-/** 纯文本响应头。 */
-export const TEXT = { 'Content-Type': 'text/plain; charset=utf-8' }
-
 /** KV 里没有记录时的兜底值。 */
 export const FALLBACK_IP = '127.0.0.1'
 

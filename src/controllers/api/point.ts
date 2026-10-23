@@ -3,12 +3,7 @@ import type { AppEnv } from '../../types'
 import { getClientIp } from '../../utils/ip'
 import { logEvent } from '../../utils/log'
 import { cacheSet } from './point.cache'
-import {
-  CACHE_TTL_MS,
-  IP_TTL_SECONDS,
-  STORED_HEADER,
-  TEXT,
-} from './point.constant'
+import { CACHE_TTL_MS, IP_TTL_SECONDS, STORED_HEADER } from './point.constant'
 import { fetchToken, readRecorded, readToken } from './point.utils'
 
 /**
@@ -22,7 +17,7 @@ export async function pointGet(c: Context<AppEnv>) {
 
   const recorded = await readRecorded(c, pointName)
 
-  return c.text(recorded.value, 200, TEXT)
+  return c.text(recorded.value)
 }
 
 /**
@@ -50,7 +45,7 @@ export async function pointPost(c: Context<AppEnv>) {
 
       const recorded = await readRecorded(c, pointName)
 
-      return c.text(recorded.value, 200, TEXT)
+      return c.text(recorded.value)
     }
 
     await c.env.KV.put(`ip-${pointName}`, ip, { expirationTtl: IP_TTL_SECONDS })
@@ -63,10 +58,10 @@ export async function pointPost(c: Context<AppEnv>) {
     cacheSet(`ip-${pointName}`, ip, CACHE_TTL_MS)
     c.header(STORED_HEADER, '1')
 
-    return c.text(ip, 200, TEXT)
+    return c.text(ip)
   }
 
   const recorded = await readRecorded(c, pointName)
 
-  return c.text(recorded.value, 200, TEXT)
+  return c.text(recorded.value)
 }

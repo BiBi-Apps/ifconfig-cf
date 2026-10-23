@@ -4,7 +4,6 @@ import {
   FALLBACK_IP,
   POINT_NAME_MAX_LENGTH,
   STORED_HEADER,
-  TEXT,
 } from './point.constant'
 
 /**
@@ -21,15 +20,13 @@ export const initStoredHeader = createMiddleware<AppEnv>(async (c, next) => {
 
 /**
  * 校验 `:point_name`：为空或超过最大长度时直接返回兜底值，不进入后续逻辑。
- * 同时统一设置 `Cache-Control: no-store`。
+ * 纯文本响应头由 `plain` 中间件统一给，这里只管业务。
  */
 export const requirePointName = createMiddleware<AppEnv>(async (c, next) => {
-  c.header('Cache-Control', 'no-store')
-
   const pointName = c.req.param('point_name') ?? ''
 
   if (!pointName || pointName.length > POINT_NAME_MAX_LENGTH) {
-    return c.text(FALLBACK_IP, 200, TEXT)
+    return c.text(FALLBACK_IP)
   }
 
   await next()

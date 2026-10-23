@@ -107,6 +107,90 @@ describe('IP 取值', () => {
   })
 })
 
+describe('请求头回显', () => {
+  const CASES: Array<[string, Record<string, string>, string]> = [
+    [
+      '/mime',
+      { accept: 'text/html,application/xhtml+xml' },
+      'text/html,application/xhtml+xml',
+    ],
+    [
+      '/lang',
+      { 'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8' },
+      'zh-CN,zh;q=0.9,en;q=0.8',
+    ],
+    ['/ua', CURL, 'curl/8.7.1'],
+    ['/encoding', { 'accept-encoding': 'gzip, br' }, 'gzip, br'],
+    [
+      '/charset',
+      { 'accept-charset': 'utf-8, iso-8859-1' },
+      'utf-8, iso-8859-1',
+    ],
+    [
+      '/forwarded',
+      { forwarded: 'for=5.5.5.5;proto=https' },
+      'for=5.5.5.5;proto=https',
+    ],
+  ]
+
+  test.each(CASES)('%s 原样回显请求头', async (path, headers, expected) => {
+    const res = await pageApp.request(path, { headers })
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(await res.text()).toBe(expected)
+  })
+
+  test.each(['/mime', '/lang', '/ua', '/encoding', '/charset', '/forwarded'])(
+    '%s 没有对应请求头时返回 unknown',
+    async (path) => {
+      const res = await pageApp.request(path, { headers: {} })
+      expect(await res.text()).toBe('unknown')
+    },
+  )
+
+  test('全空白的请求头视为缺失', async () => {
+    const res = await pageApp.request('/ua', {
+      headers: { 'user-agent': '  ' },
+    })
+    expect(await res.text()).toBe('unknown')
+  })
+
+  test('/charset 没有 Accept-Charset 时从 Accept 的 charset= 取', async () => {
+    const res = await pageApp.request('/charset', {
+      headers: { accept: 'text/html; charset=UTF-8' },
+    })
+    expect(await res.text()).toBe('UTF-8')
+  })
+
+  test('/forwarded 没有 Forwarded 时退到 X-Forwarded-For', async () => {
+    const res = await pageApp.request('/forwarded', {
+      headers: { 'x-forwarded-for': '3.3.3.3, 4.4.4.4' },
+    })
+    expect(await res.text()).toBe('3.3.3.3, 4.4.4.4')
+  })
+
+  test('/charset 多候选时只取第一个 charset', async () => {
+    const res = await pageApp.request('/charset', {
+      headers: { accept: 'text/html;charset=UTF-8, application/json' },
+    })
+    expect(await res.text()).toBe('UTF-8')
+  })
+
+  test('/forwarded 优先 Forwarded，空白时让位给 X-Forwarded-For', async () => {
+    const both = await pageApp.request('/forwarded', {
+      headers: { forwarded: 'for=5.5.5.5', 'x-forwarded-for': '3.3.3.3' },
+    })
+    expect(await both.text()).toBe('for=5.5.5.5')
+
+    const blank = await pageApp.request('/forwarded', {
+      headers: { forwarded: '  ', 'x-forwarded-for': '3.3.3.3' },
+    })
+    expect(await blank.text()).toBe('3.3.3.3')
+  })
+})
+
 describe('未知路径', () => {
   test('返回 404', async () => {
     const res = await pageApp.request('/nope')
