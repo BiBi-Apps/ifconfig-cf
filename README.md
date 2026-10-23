@@ -25,6 +25,43 @@ curl ifconfig.example.com/ip
 # 1.2.3.4
 ```
 
+### Request headers
+
+Each of these echoes one request header back as plain text, so you can see what
+your client actually sends (an empty body when the header is missing):
+
+```bash
+# media types the client accepts (Accept)
+curl ifconfig.example.com/mime
+# */*
+
+# languages (Accept-Language)
+curl ifconfig.example.com/lang
+# en-US,en;q=0.9
+
+# user agent (User-Agent)
+curl ifconfig.example.com/ua
+# curl/8.7.1
+
+# charsets (Accept-Charset, else the charset= of Accept)
+curl ifconfig.example.com/charset
+# (empty body)
+
+# content codings (Accept-Encoding)
+curl ifconfig.example.com/encoding
+# gzip, br
+
+# forwarding headers (Forwarded, else X-Forwarded-For)
+curl ifconfig.example.com/forwarded
+# (empty body)
+```
+
+Missing or blank request headers return an empty body.
+
+`/forwarded` only reports what reaches the Worker. The visitor IP is always
+taken from `cf-connecting-ip` (written by the Cloudflare edge), never from these
+headers, so a client cannot spoof it by sending its own `X-Forwarded-For`.
+
 ### Per-point IP record
 
 `/_/<point_name>/ip` reads the IP recorded for a point; `POST /_/<point_name>`
@@ -32,11 +69,11 @@ writes it. `point_name` must be at most 64 characters.
 
 ```bash
 # read the IP recorded for this point (127.0.0.1 when nothing is recorded)
-curl ifconfig.example.com/_my-point/ip
+curl ifconfig.example.com/_/my-point/ip
 # 1.2.3.4
 
 # record this visitor's IP; only written when the token matches
-curl -X POST "ifconfig.example.com/_my-point?token=secret"
+curl -X POST "ifconfig.example.com/_/my-point?token=secret"
 # 1.2.3.4
 ```
 

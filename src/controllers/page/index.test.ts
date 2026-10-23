@@ -143,10 +143,10 @@ describe('请求头回显', () => {
   })
 
   test.each(['/mime', '/lang', '/ua', '/encoding', '/charset', '/forwarded'])(
-    '%s 没有对应请求头时返回 unknown',
+    '%s 没有对应请求头时返回空字符串',
     async (path) => {
       const res = await pageApp.request(path, { headers: {} })
-      expect(await res.text()).toBe('unknown')
+      expect(await res.text()).toBe('')
     },
   )
 
@@ -154,7 +154,7 @@ describe('请求头回显', () => {
     const res = await pageApp.request('/ua', {
       headers: { 'user-agent': '  ' },
     })
-    expect(await res.text()).toBe('unknown')
+    expect(await res.text()).toBe('')
   })
 
   test('/charset 没有 Accept-Charset 时从 Accept 的 charset= 取', async () => {

@@ -24,6 +24,42 @@ curl ifconfig.example.com/ip
 # 1.2.3.4
 ```
 
+### 请求头回显
+
+下面每个路径都把对应的请求头原样回显为纯文本，用来查看客户端实际发的是什么
+（没有该请求头时返回空正文）：
+
+```bash
+# 客户端能接受的媒体类型（Accept）
+curl ifconfig.example.com/mime
+# */*
+
+# 语言偏好（Accept-Language）
+curl ifconfig.example.com/lang
+# zh-CN,zh;q=0.9,en;q=0.8
+
+# 客户端标识（User-Agent）
+curl ifconfig.example.com/ua
+# curl/8.7.1
+
+# 字符集（Accept-Charset，取不到则用 Accept 里的 charset=）
+curl ifconfig.example.com/charset
+# （空正文）
+
+# 压缩方式（Accept-Encoding）
+curl ifconfig.example.com/encoding
+# gzip, br
+
+# 转发头（Forwarded，取不到则用 X-Forwarded-For）
+curl ifconfig.example.com/forwarded
+# （空正文）
+```
+
+请求头缺失或全为空白时返回空正文。
+
+`/forwarded` 只回显到达 Worker 的转发头；访问者 IP 始终取自 `cf-connecting-ip`
+（由 Cloudflare 边缘写入），转发头不参与 IP 判断。
+
 ### 按 point 记录 IP
 
 `/_/<point_name>/ip` 用 GET 读该 point 的记录，`POST /_/<point_name>` 写入。
@@ -31,11 +67,11 @@ curl ifconfig.example.com/ip
 
 ```bash
 # 读取该 point 记录的 IP（没有记录则返回 127.0.0.1）
-curl ifconfig.example.com/_my-point/ip
+curl ifconfig.example.com/_/my-point/ip
 # 1.2.3.4
 
 # 记录本次访问者 IP，token 正确才会写入
-curl -X POST "ifconfig.example.com/_my-point?token=secret"
+curl -X POST "ifconfig.example.com/_/my-point?token=secret"
 # 1.2.3.4
 ```
 

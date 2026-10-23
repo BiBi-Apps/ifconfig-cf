@@ -13,5 +13,5 @@ export function charset(c: Context<AppEnv>) {
     c.req.header('accept') ?? '',
   )?.[1]
 
-  return c.text(fromAccept ?? 'unknown')
+  return c.text(fromAccept ?? '')
 }
