@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import app from './index'
+import app from './app'
 
 describe('根应用挂载', () => {
   test('/', async () => {

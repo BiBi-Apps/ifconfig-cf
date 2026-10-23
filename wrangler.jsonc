@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ifconfig-cf",
   "compatibility_date": "2025-08-03",
-  "main": "./src/index.tsx",
+  "main": "./src/index.ts",
   // KV 绑定：`npx wrangler kv namespace create KV` 创建后，把返回的 id 粘到下面
   "kv_namespaces": [
     {
